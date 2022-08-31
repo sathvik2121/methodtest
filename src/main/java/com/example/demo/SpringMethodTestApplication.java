@@ -68,9 +68,9 @@ import java.security.cert.Certificate;
 @SpringBootApplication
 public class SpringMethodTestApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args)  {
 		//SpringMethodTestApplication ob1=new SpringMethodTestApplication();
-		//String message2=ob1.method1();
+		//String message2=ob1.run();
 		//System.out.println(message2);
 		SpringApplication.run(SpringMethodTestApplication.class, args);
 	}
@@ -80,7 +80,7 @@ public class SpringMethodTestApplication {
 	public String method2()
 	{
 		System.out.println("done");
-		return "hello hi bye";
+		return "hello hi bye1";
 	}
 	
 	@GetMapping("/testing")
@@ -89,7 +89,7 @@ public class SpringMethodTestApplication {
 	{
 		 final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
 	    final char[] PASSWORD = "Sathvik123#".toCharArray();
-		File xsltFile = null;
+		
 		System.out.println("Azure Blob storage quick start sample");
 
 		CloudStorageAccount storageAccount;
@@ -105,71 +105,14 @@ public class SpringMethodTestApplication {
 			// Create the container if it does not exist with public access.
 			System.out.println("Creating container: " + container.getName());
 			container.createIfNotExists(BlobContainerPublicAccessType.CONTAINER, new BlobRequestOptions(), new OperationContext());		 
-			xsltFile = File.createTempFile("template", ".xsl");
-			CloudBlockBlob blob2 = container2.getBlockBlobReference("template.xsl");
-	    	FileOutputStream xsloutput= new FileOutputStream(xsltFile);
-	    	blob2.download(xsloutput);
-	    	File xmlFile=File.createTempFile("data", ".xml");
-	    	CloudBlockBlob blob3 = container2.getBlockBlobReference("data1.xml");
-	    	FileOutputStream xmloutput= new FileOutputStream(xmlFile);
-	    	blob3.download(xmloutput);
-           StreamSource xmlSource = new StreamSource(xmlFile);
-           File outputFile=File.createTempFile("output", ".pdf");
-    // create an instance of fop factory
-    FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
-    // a user agent is needed for transformation
-    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-    // Setup output
-    OutputStream out3;
-    out3 = new java.io.FileOutputStream( outputFile);
-
-    
-        // Construct fop with desired output format
-        Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out3);
-
-        // Setup XSLT
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer(new StreamSource(xsltFile));
-
-        // Resulting SAX events (the generated FO) must be piped through to
-        // FOP
-        Result res = new SAXResult(fop.getDefaultHandler());
-
-        // Start XSLT transformation and FOP processing
-        // That's where the XML is first transformed to XSL-FO and then
-        // PDF is created
-        transformer.transform(xmlSource, res);
-        out3.close();
-        PDDocument document = PDDocument.loadNonSeq(outputFile, null);
-		@SuppressWarnings("unchecked")
-		List<PDPage> pdPages = document.getDocumentCatalog().getAllPages();
-       File imagepdf=File.createTempFile("imagepdf",".pdf");
-        //int page = 0;
-        File imageFile=File.createTempFile("image", ".png");
-        OutputStream fos=new FileOutputStream(imagepdf);
-    	Document document1 = new Document(PageSize.A4.rotate());
-		 PdfWriter writer = PdfWriter.getInstance(document1, fos);
-					      writer.open();
-					      document1.open();
-
-        for(PDPage pdPage : pdPages){
-           // ++page;
-            BufferedImage bim = pdPage.convertToImage(BufferedImage.TYPE_INT_RGB, 300);
-            ImageIOUtil.writeImage(bim, imageFile.getAbsolutePath(), 300);
-        
-        
-	
-	
-					 Image image = Image.getInstance(imageFile.getAbsolutePath());
-					      image.scaleToFit(PageSize.A5.getWidth(), PageSize.A5.getHeight());
-					      document1.add(image);
-					      
-        }
-        document1.close();
-	      writer.close();
+			
        
 	File finalFile=File.createTempFile("final", ".pdf");
+	File outputFile=File.createTempFile("output", ".pdf");
 	File keyFile=File.createTempFile("keystore",".pfx");
+	CloudBlockBlob blob2 = container2.getBlockBlobReference("output.pdf");
+	FileOutputStream xsloutput= new FileOutputStream(outputFile);
+	blob2.download(xsloutput);
 	CloudBlockBlob blob4 = container2.getBlockBlobReference("pfxcertificate.pfx");
 	FileOutputStream keyoutput= new FileOutputStream(keyFile);
 	blob4.download(keyoutput);
@@ -184,7 +127,7 @@ public class SpringMethodTestApplication {
     Certificate[] chain = ks.getCertificateChain(alias);
    
     SpringMethodTestApplication app = new SpringMethodTestApplication();
-    app.sign(imagepdf.getAbsolutePath(), finalFile.getAbsolutePath() , chain, pk, DigestAlgorithms.SHA256, provider.getName(),
+    app.sign(outputFile.getAbsolutePath(), finalFile.getAbsolutePath() , chain, pk, DigestAlgorithms.SHA256, provider.getName(),
            PdfSigner.CryptoStandard.CMS, "Approved", "India");
 		
     CloudBlockBlob blob = container.getBlockBlobReference("finalFile.pdf");
@@ -195,18 +138,11 @@ public class SpringMethodTestApplication {
 	
 	keyoutput.close();
 	in.close();
-	xmloutput.close();
-	xsloutput.close();
-	keyFile.deleteOnExit();
-	xsltFile.deleteOnExit();
-	xmlFile.deleteOnExit();
-	finalFile.deleteOnExit();
-	outputFile.deleteOnExit();
-	imageFile.deleteOnExit();
-	imagepdf.deleteOnExit();
+	
+	
 
 		}
-	catch (FOPException | IOException | TransformerException e) {
+	catch (IOException e) {
        e.printStackTrace();
 	}
 		return "successfull";
@@ -230,7 +166,7 @@ public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, St
           // as a background for the signed field. The "false" value is the default value.
             .setReuseAppearance(false)
             .setPageRect(rect)
-            .setPageNumber(4);
+            .setPageNumber(2);
     signer.setFieldName("sig");
 
     IExternalSignature pks = new PrivateKeySignature(pk, digestAlgorithm, provider);
