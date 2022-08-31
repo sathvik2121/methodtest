@@ -85,12 +85,10 @@ public class SpringMethodTestApplication {
 	
 	@GetMapping("/testing")
 	
-	 public String  run()
-	//public static String demo()
+	public static String run()
 	{
-		 final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
-		 String s = "";
-		File sourceFile = null;
+		final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
+		File sourceFile = null, downloadedFile = null;
 		System.out.println("Azure Blob storage quick start sample");
 
 		CloudStorageAccount storageAccount;
@@ -98,45 +96,79 @@ public class SpringMethodTestApplication {
 		CloudBlobContainer container=null;
 
 		try {    
-		
+			// Parse the connection string and create a blob client to interact with Blob storage
 			storageAccount = CloudStorageAccount.parse(storageConnectionString);
 			blobClient = storageAccount.createCloudBlobClient();
 			container = blobClient.getContainerReference("quickstartcontainer");
 			CloudBlobContainer container2=blobClient.getContainerReference("fileaccess");
-		
+			// Create the container if it does not exist with public access.
 			System.out.println("Creating container: " + container.getName());
 			container.createIfNotExists(BlobContainerPublicAccessType.CONTAINER, new BlobRequestOptions(), new OperationContext());		 
 			 
-		
-			sourceFile = File.createTempFile("temp", ".txt");
+			//Creating a sample file
+			sourceFile = File.createTempFile("final2", ".pdf");
 			System.out.println("Creating a sample file at: " + sourceFile.toString());
-			
-			  
-			  
-			    	CloudBlockBlob blob2 = container2.getBlockBlobReference("hi.txt");
-			    	
-			    	FileOutputStream fos2= new FileOutputStream(sourceFile);
+			Document document = new Document(PageSize.A4.rotate());
+			   // String input ="src//main//java//output//output.pdf-1.png"; // .gif and .jpg are ok too!
+			   // String output = "src//main//java//output//final.pdf";
+			    try {
+			    	CloudBlockBlob blob2 = container2.getBlockBlobReference("output.pdf-1.png");
+			    	File sourceFile2=File.createTempFile("final", ".png");
+			    	FileOutputStream fos2= new FileOutputStream(sourceFile2);
 			    	blob2.download(fos2);
-			    	 BufferedReader br= new BufferedReader(new FileReader(sourceFile));
-			         String z;
-			         while ((z = br.readLine()) != null)
-			        	 s=s+z;
-                    br.close();
-                    fos2.close();
+			    	
+			    	//URL url=new URL("https://pocdemofileaccess.blob.core.windows.net/fileaccess/final.pdf");
+			      FileOutputStream fos = new FileOutputStream(sourceFile);
+			      PdfWriter writer = PdfWriter.getInstance(document, fos);
+			      writer.open();
+			      document.open();
+			      Image image = Image.getInstance(sourceFile2.getAbsolutePath());
+			      image.scaleToFit(PageSize.A5.getWidth(), PageSize.A5.getHeight());
+			      document.add(image);
+			      document.close();
+			      writer.close();
+			    }
+			    catch (Exception e) {
+			      e.printStackTrace();
+			    }
 
+			//Writer output1 = new BufferedWriter(new FileWriter(sourceFile));
+			//output1.write("Hello Azure!");
+			//output1.close();
+
+			//Getting a blob reference
+			CloudBlockBlob blob = container.getBlockBlobReference(sourceFile.getName());
+
+			//Creating blob and uploading file to it
+			System.out.println("Uploading the sample file ");
+			blob.uploadFromFile(sourceFile.getAbsolutePath());
+
+			//Listing contents of container
+			for (ListBlobItem blobItem : container.listBlobs()) {
+			System.out.println("URI of blob is: " + blobItem.getUri());
 		}
-		 catch (Exception e) {
-		      e.printStackTrace();
-		    }
-			    	
-			    	
-			 //System.out.println(s);
-		return s;
-			         
-			         
-			  
-	
-}
+
+		// Download blob. In most cases, you would have to retrieve the reference
+		// to cloudBlockBlob here. However, we created that reference earlier, and 
+		// haven't changed the blob we're interested in, so we can reuse it. 
+		// Here we are creating a new file to download to. Alternatively you can also pass in the path as a string into downloadToFile method: blob.downloadToFile("/path/to/new/file").
+		downloadedFile = new File(sourceFile.getParentFile(), "downloadedFile.txt");
+		blob.downloadToFile(downloadedFile.getAbsolutePath());
+		} 
+		catch (StorageException ex)
+		{
+			System.out.println(String.format("Error returned from the service. Http code: %d and error code: %s", ex.getHttpStatusCode(), ex.getErrorCode()));
+		}
+		catch (Exception ex) 
+		{
+			System.out.println(ex.getMessage());
+		}
+		finally 
+		{
+			System.out.println("The program has completed successfully.");
+			}
+		return "successfull";
+	}
 	
 	
 	
