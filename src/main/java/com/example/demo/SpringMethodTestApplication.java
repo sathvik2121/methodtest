@@ -76,6 +76,7 @@ public class SpringMethodTestApplication {
 	
 	public String method2()
 	{
+		System.out.println("done");
 		return "hello hi bye";
 	}
 	
