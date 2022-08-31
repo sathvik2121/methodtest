@@ -17,15 +17,11 @@ public class SpringMethodTestApplication {
 	}
 
 	@GetMapping("/")
-	public String method1()
-	{
-		SpringMethodTestApplication ob=new SpringMethodTestApplication();
-		String message=ob.method2();
-		return message;
-	}
+	
 	public String method2()
 	{
-		return "hello";
+		return "hello hi";
 	}
+	
 	
 }
