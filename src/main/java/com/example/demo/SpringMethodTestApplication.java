@@ -25,7 +25,7 @@ public class SpringMethodTestApplication {
 	}
 	public String method2()
 	{
-		return "hi";
+		return "hello";
 	}
 	
 }
