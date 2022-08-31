@@ -85,10 +85,11 @@ public class SpringMethodTestApplication {
 	
 	@GetMapping("/testing")
 	
-	public static String run()
+	public String run()throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException
 	{
-		final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
-		File sourceFile = null, downloadedFile = null;
+		  final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
+	    final char[] PASSWORD = "Sathvik123#".toCharArray();
+		File xsltFile = null;
 		System.out.println("Azure Blob storage quick start sample");
 
 		CloudStorageAccount storageAccount;
@@ -104,71 +105,140 @@ public class SpringMethodTestApplication {
 			// Create the container if it does not exist with public access.
 			System.out.println("Creating container: " + container.getName());
 			container.createIfNotExists(BlobContainerPublicAccessType.CONTAINER, new BlobRequestOptions(), new OperationContext());		 
-			 
-			//Creating a sample file
-			sourceFile = File.createTempFile("final2", ".pdf");
-			System.out.println("Creating a sample file at: " + sourceFile.toString());
-			Document document = new Document(PageSize.A4.rotate());
-			   // String input ="src//main//java//output//output.pdf-1.png"; // .gif and .jpg are ok too!
-			   // String output = "src//main//java//output//final.pdf";
-			    try {
-			    	CloudBlockBlob blob2 = container2.getBlockBlobReference("output.pdf-1.png");
-			    	File sourceFile2=File.createTempFile("final", ".png");
-			    	FileOutputStream fos2= new FileOutputStream(sourceFile2);
-			    	blob2.download(fos2);
-			    	
-			    	//URL url=new URL("https://pocdemofileaccess.blob.core.windows.net/fileaccess/final.pdf");
-			      FileOutputStream fos = new FileOutputStream(sourceFile);
-			      PdfWriter writer = PdfWriter.getInstance(document, fos);
-			      writer.open();
-			      document.open();
-			      Image image = Image.getInstance(sourceFile2.getAbsolutePath());
-			      image.scaleToFit(PageSize.A5.getWidth(), PageSize.A5.getHeight());
-			      document.add(image);
-			      document.close();
-			      writer.close();
-			    }
-			    catch (Exception e) {
-			      e.printStackTrace();
-			    }
+			xsltFile = File.createTempFile("template", ".xsl");
+			CloudBlockBlob blob2 = container2.getBlockBlobReference("template.xsl");
+	    	FileOutputStream xsloutput= new FileOutputStream(xsltFile);
+	    	blob2.download(xsloutput);
+	    	File xmlFile=File.createTempFile("data", ".xml");
+	    	CloudBlockBlob blob3 = container2.getBlockBlobReference("data1.xml");
+	    	FileOutputStream xmloutput= new FileOutputStream(xmlFile);
+	    	blob3.download(xmloutput);
+           StreamSource xmlSource = new StreamSource(xmlFile);
+           File outputFile=File.createTempFile("output", ".pdf");
+    // create an instance of fop factory
+    FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
+    // a user agent is needed for transformation
+    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
+    // Setup output
+    OutputStream out3;
+    out3 = new java.io.FileOutputStream( outputFile);
 
-			//Writer output1 = new BufferedWriter(new FileWriter(sourceFile));
-			//output1.write("Hello Azure!");
-			//output1.close();
+    
+        // Construct fop with desired output format
+        Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out3);
 
-			//Getting a blob reference
-			CloudBlockBlob blob = container.getBlockBlobReference(sourceFile.getName());
+        // Setup XSLT
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer(new StreamSource(xsltFile));
 
-			//Creating blob and uploading file to it
-			System.out.println("Uploading the sample file ");
-			blob.uploadFromFile(sourceFile.getAbsolutePath());
+        // Resulting SAX events (the generated FO) must be piped through to
+        // FOP
+        Result res = new SAXResult(fop.getDefaultHandler());
 
-			//Listing contents of container
-			for (ListBlobItem blobItem : container.listBlobs()) {
-			System.out.println("URI of blob is: " + blobItem.getUri());
+        // Start XSLT transformation and FOP processing
+        // That's where the XML is first transformed to XSL-FO and then
+        // PDF is created
+        transformer.transform(xmlSource, res);
+        out3.close();
+        PDDocument document = PDDocument.loadNonSeq(outputFile, null);
+		@SuppressWarnings("unchecked")
+		List<PDPage> pdPages = document.getDocumentCatalog().getAllPages();
+       File imagepdf=File.createTempFile("imagepdf",".pdf");
+        //int page = 0;
+        File imageFile=File.createTempFile("image", ".png");
+        OutputStream fos=new FileOutputStream(imagepdf);
+    	Document document1 = new Document(PageSize.A4.rotate());
+		 PdfWriter writer = PdfWriter.getInstance(document1, fos);
+					      writer.open();
+					      document1.open();
+
+        for(PDPage pdPage : pdPages){
+           // ++page;
+            BufferedImage bim = pdPage.convertToImage(BufferedImage.TYPE_INT_RGB, 300);
+            ImageIOUtil.writeImage(bim, imageFile.getAbsolutePath(), 300);
+        
+        
+	
+	
+					 Image image = Image.getInstance(imageFile.getAbsolutePath());
+					      image.scaleToFit(PageSize.A5.getWidth(), PageSize.A5.getHeight());
+					      document1.add(image);
+					      
+        }
+        document1.close();
+	      writer.close();
+       
+	File finalFile=File.createTempFile("final", ".pdf");
+	File keyFile=File.createTempFile("keystore",".pfx");
+	CloudBlockBlob blob4 = container2.getBlockBlobReference("pfxcertificate.pfx");
+	FileOutputStream keyoutput= new FileOutputStream(keyFile);
+	blob4.download(keyoutput);
+	InputStream in=new FileInputStream(keyFile);
+
+    BouncyCastleProvider provider = new BouncyCastleProvider();
+    Security.addProvider(provider);
+    KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+    ks.load(in, PASSWORD);
+    String alias = ks.aliases().nextElement();
+    PrivateKey pk = (PrivateKey) ks.getKey(alias, PASSWORD);
+    Certificate[] chain = ks.getCertificateChain(alias);
+   
+    SpringMethodTestApplication app = new SpringMethodTestApplication();
+    app.sign(imagepdf.getAbsolutePath(), finalFile.getAbsolutePath() , chain, pk, DigestAlgorithms.SHA256, provider.getName(),
+           PdfSigner.CryptoStandard.CMS, "Approved", "India");
+		
+    CloudBlockBlob blob = container.getBlockBlobReference("finalFile.pdf");
+    
+	//Creating blob and uploading file to it
+	System.out.println("Uploading the sample file ");
+	blob.uploadFromFile(finalFile.getAbsolutePath());
+	
+	keyoutput.close();
+	in.close();
+	xmloutput.close();
+	xsloutput.close();
+	keyFile.deleteOnExit();
+	xsltFile.deleteOnExit();
+	xmlFile.deleteOnExit();
+	finalFile.deleteOnExit();
+	outputFile.deleteOnExit();
+	imageFile.deleteOnExit();
+	imagepdf.deleteOnExit();
+
 		}
-
-		// Download blob. In most cases, you would have to retrieve the reference
-		// to cloudBlockBlob here. However, we created that reference earlier, and 
-		// haven't changed the blob we're interested in, so we can reuse it. 
-		// Here we are creating a new file to download to. Alternatively you can also pass in the path as a string into downloadToFile method: blob.downloadToFile("/path/to/new/file").
-		downloadedFile = new File(sourceFile.getParentFile(), "downloadedFile.txt");
-		blob.downloadToFile(downloadedFile.getAbsolutePath());
-		} 
-		catch (StorageException ex)
-		{
-			System.out.println(String.format("Error returned from the service. Http code: %d and error code: %s", ex.getHttpStatusCode(), ex.getErrorCode()));
-		}
-		catch (Exception ex) 
-		{
-			System.out.println(ex.getMessage());
-		}
-		finally 
-		{
-			System.out.println("The program has completed successfully.");
-			}
-		return "successfull";
+	catch (FOPException | IOException | TransformerException e) {
+       e.printStackTrace();
 	}
+		return "successfull";
+   }
+
+public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, String digestAlgorithm,
+        String provider, PdfSigner.CryptoStandard signatureType, String reason, String location)
+        throws GeneralSecurityException, IOException {
+
+    PdfReader reader = new PdfReader(src);
+    PdfSigner signer = new PdfSigner(reader, new FileOutputStream(dest),false);
+
+    // Create the signature appearance
+    Rectangle rect = new Rectangle(400, 400, 400, 400);
+   PdfSignatureAppearance appearance = signer.getSignatureAppearance();
+    appearance
+           .setReason(reason)
+            .setLocation(location)
+
+           //Specify if the appearance before field is signed will be used
+          // as a background for the signed field. The "false" value is the default value.
+            .setReuseAppearance(false)
+            .setPageRect(rect)
+            .setPageNumber(4);
+    signer.setFieldName("sig");
+
+    IExternalSignature pks = new PrivateKeySignature(pk, digestAlgorithm, provider);
+    IExternalDigest digest = new BouncyCastleDigest();
+
+    // Sign the document using the detached mode, CMS or CAdES equivalent.
+   signer.signDetached(digest, pks, chain, null, null, null, 0, signatureType);
+}
 	
 	
 	
