@@ -87,7 +87,7 @@ public class SpringMethodTestApplication {
 	
 	public String run()throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException
 	{
-		  final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
+		 final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
 	    final char[] PASSWORD = "Sathvik123#".toCharArray();
 		File xsltFile = null;
 		System.out.println("Azure Blob storage quick start sample");
