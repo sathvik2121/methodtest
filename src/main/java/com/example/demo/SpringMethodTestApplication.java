@@ -68,7 +68,7 @@ import java.security.cert.Certificate;
 @SpringBootApplication
 public class SpringMethodTestApplication {
 
-	public static void main(String[] args)  {
+	public static void main(String[] args)   {
 		//SpringMethodTestApplication ob1=new SpringMethodTestApplication();
 		//String message2=ob1.run();
 		//System.out.println(message2);
@@ -110,7 +110,7 @@ public class SpringMethodTestApplication {
 	File finalFile=File.createTempFile("final", ".pdf");
 	File outputFile=File.createTempFile("output", ".pdf");
 	File keyFile=File.createTempFile("keystore",".pfx");
-	CloudBlockBlob blob2 = container2.getBlockBlobReference("output.pdf");
+	CloudBlockBlob blob2 = container2.getBlockBlobReference("outputFile.pdf");
 	FileOutputStream xsloutput= new FileOutputStream(outputFile);
 	blob2.download(xsloutput);
 	CloudBlockBlob blob4 = container2.getBlockBlobReference("pfxcertificate.pfx");
@@ -156,7 +156,7 @@ public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, St
     PdfSigner signer = new PdfSigner(reader, new FileOutputStream(dest),false);
 
     // Create the signature appearance
-    Rectangle rect = new Rectangle(400, 400, 400, 400);
+    Rectangle rect = new Rectangle(400, -200, 400, 400);
    PdfSignatureAppearance appearance = signer.getSignatureAppearance();
     appearance
            .setReason(reason)
@@ -166,7 +166,7 @@ public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, St
           // as a background for the signed field. The "false" value is the default value.
             .setReuseAppearance(false)
             .setPageRect(rect)
-            .setPageNumber(2);
+            .setPageNumber(4);
     signer.setFieldName("sig");
 
     IExternalSignature pks = new PrivateKeySignature(pk, digestAlgorithm, provider);
