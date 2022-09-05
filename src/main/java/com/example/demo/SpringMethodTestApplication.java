@@ -156,7 +156,7 @@ public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, St
     PdfSigner signer = new PdfSigner(reader, new FileOutputStream(dest),false);
 
     // Create the signature appearance
-    Rectangle rect = new Rectangle(400, -200, 400, 400);
+    Rectangle rect = new Rectangle(70, 105, 400, 400);
    PdfSignatureAppearance appearance = signer.getSignatureAppearance();
     appearance
            .setReason(reason)
@@ -166,7 +166,7 @@ public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, St
           // as a background for the signed field. The "false" value is the default value.
             .setReuseAppearance(false)
             .setPageRect(rect)
-            .setPageNumber(4);
+            .setPageNumber(5);
     signer.setFieldName("sig");
 
     IExternalSignature pks = new PrivateKeySignature(pk, digestAlgorithm, provider);
