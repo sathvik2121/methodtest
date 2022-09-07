@@ -68,10 +68,10 @@ import java.security.cert.Certificate;
 @SpringBootApplication
 public class SpringMethodTestApplication {
 
-	public static void main(String[] args)   {
-		//SpringMethodTestApplication ob1=new SpringMethodTestApplication();
-		//String message2=ob1.run();
-		//System.out.println(message2);
+	public static void main(String[] args) throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException   {
+		SpringMethodTestApplication ob1=new SpringMethodTestApplication();
+		String message2=ob1.run();
+		System.out.println(message2);
 		SpringApplication.run(SpringMethodTestApplication.class, args);
 	}
 
@@ -87,7 +87,7 @@ public class SpringMethodTestApplication {
 	
 	public String run()throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException
 	{
-		 final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocdemofilecontainer;AccountKey=AUrYg7IiXN6ujRJ6oY4lUVygLPYYhrgcUqv2Ee/ESWW/946H6KP7LIDF0wIG1olh1ii324gfzGZz+ASt84o3YQ==;EndpointSuffix=core.windows.net";
+		 final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=pocfiledemoaccess;AccountKey=GY0kWJV+ik5mNByEavFYamMDMu5LecAHNK0VmiD6VPQka7s/4OrrATcBol4jOIxq33ID3yChL0W8+AStDb8VCA==;EndpointSuffix=core.windows.net";
 	    final char[] PASSWORD = "Sathvik123#".toCharArray();
 		
 		System.out.println("Azure Blob storage quick start sample");
