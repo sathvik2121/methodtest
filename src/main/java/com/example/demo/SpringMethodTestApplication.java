@@ -64,6 +64,7 @@ import java.security.PrivateKey;
 import java.security.Security;
 
 import java.security.cert.Certificate;
+import java.sql.Blob;
 @RestController
 @SpringBootApplication
 public class SpringMethodTestApplication {
@@ -139,13 +140,13 @@ public class SpringMethodTestApplication {
 	keyoutput.close();
 	in.close();
 	
-	
+	return blob.getUri().toString();
 
 		}
 	catch (IOException e) {
        e.printStackTrace();
 	}
-		return "successfull";
+		
    }
 
 public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, String digestAlgorithm,
