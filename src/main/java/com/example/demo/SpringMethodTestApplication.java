@@ -69,9 +69,9 @@ import java.security.cert.Certificate;
 public class SpringMethodTestApplication {
 
 	public static void main(String[] args) throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException   {
-		SpringMethodTestApplication ob1=new SpringMethodTestApplication();
-		String message2=ob1.run();
-		System.out.println(message2);
+		//SpringMethodTestApplication ob1=new SpringMethodTestApplication();
+		//String message2=ob1.run();
+		//System.out.println(message2);
 		SpringApplication.run(SpringMethodTestApplication.class, args);
 	}
 
