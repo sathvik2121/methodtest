@@ -64,15 +64,14 @@ import java.security.PrivateKey;
 import java.security.Security;
 
 import java.security.cert.Certificate;
-import java.sql.Blob;
 @RestController
 @SpringBootApplication
 public class SpringMethodTestApplication {
 
 	public static void main(String[] args) throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException   {
-		//SpringMethodTestApplication ob1=new SpringMethodTestApplication();
-		//String message2=ob1.run();
-		//System.out.println(message2);
+		SpringMethodTestApplication ob1=new SpringMethodTestApplication();
+		String message2=ob1.run();
+		System.out.println(message2);
 		SpringApplication.run(SpringMethodTestApplication.class, args);
 	}
 
@@ -92,7 +91,7 @@ public class SpringMethodTestApplication {
 	    final char[] PASSWORD = "Sathvik123#".toCharArray();
 		
 		System.out.println("Azure Blob storage quick start sample");
-String url = null;
+
 		CloudStorageAccount storageAccount;
 		CloudBlobClient blobClient = null;
 		CloudBlobContainer container=null;
@@ -138,16 +137,19 @@ String url = null;
 	blob.uploadFromFile(finalFile.getAbsolutePath());
 	
 	keyoutput.close();
+	xsloutput.close();
 	in.close();
+	finalFile.deleteOnExit();
+	outputFile.deleteOnExit();
+	keyFile.deleteOnExit();
 	
-	url= blob.getUri().toString();
+	
 
 		}
 	catch (IOException e) {
        e.printStackTrace();
 	}
-		return url;
-		
+		return "successfull";
    }
 
 public void sign(String src, String dest, Certificate[] chain, PrivateKey pk, String digestAlgorithm,
