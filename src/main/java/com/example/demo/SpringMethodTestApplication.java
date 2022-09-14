@@ -92,7 +92,7 @@ public class SpringMethodTestApplication {
 	    final char[] PASSWORD = "Sathvik123#".toCharArray();
 		
 		System.out.println("Azure Blob storage quick start sample");
-
+String url = null;
 		CloudStorageAccount storageAccount;
 		CloudBlobClient blobClient = null;
 		CloudBlobContainer container=null;
@@ -140,12 +140,13 @@ public class SpringMethodTestApplication {
 	keyoutput.close();
 	in.close();
 	
-	return blob.getUri().toString();
+	url= blob.getUri().toString();
 
 		}
 	catch (IOException e) {
        e.printStackTrace();
 	}
+		return url;
 		
    }
 
