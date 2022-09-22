@@ -54,7 +54,9 @@ import java.security.cert.Certificate;
 public class SignatureGeneration {
 
 	public static void main(String[] args) throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException   {
-		
+		SignatureGeneration ob= new SignatureGeneration();
+		String s=ob.run();
+		System.out.println(s);
 		SpringApplication.run(SignatureGeneration.class, args);
 	}
 
