@@ -51,19 +51,19 @@ import java.security.Security;
 import java.security.cert.Certificate;
 @RestController
 @SpringBootApplication
-public class signaturegeneration {
+public class SignatureGeneration {
 
 	public static void main(String[] args) throws StorageException, URISyntaxException, DocumentException, GeneralSecurityException   {
 		
-		SpringApplication.run(signaturegeneration.class, args);
+		SpringApplication.run(SignatureGeneration.class, args);
 	}
 
 	@GetMapping("/")
 	
 	public String method2()
 	{
-		System.out.println("done");
-		return "hello hi signature generation";
+		
+		return "welcome to signature generation";
 	}
 	
 	@GetMapping("/testing")
@@ -82,6 +82,8 @@ public class signaturegeneration {
 			container = blobClient.getContainerReference("finalpdffolder");
 			CloudBlobContainer container2=blobClient.getContainerReference("fileaccess");
 			CloudBlobContainer imagecontainer=blobClient.getContainerReference("buffercontainerimages");
+			CloudBlobContainer buffercontainer=blobClient.getContainerReference("buffercontainer");
+			CloudBlobContainer xmlcontainer=blobClient.getContainerReference("xmlcontainer");
 			container.createIfNotExists(BlobContainerPublicAccessType.CONTAINER, new BlobRequestOptions(), new OperationContext());		 
 			List<String> list=new ArrayList<String>();
 			for (ListBlobItem blobItem : imagecontainer.listBlobs()) {
@@ -109,12 +111,14 @@ public class signaturegeneration {
 	               String alias = ks.aliases().nextElement();
 	               PrivateKey pk = (PrivateKey) ks.getKey(alias, PASSWORD);
 	               Certificate[] chain = ks.getCertificateChain(alias);
-	               signaturegeneration app = new signaturegeneration();
+	               SignatureGeneration app = new SignatureGeneration();
 	               app.sign(outputFile.getAbsolutePath(), finalFile.getAbsolutePath() , chain, pk, DigestAlgorithms.SHA256, provider.getName(),
 	               PdfSigner.CryptoStandard.CMS, "Approved", "India");
 	               String fileNameWithOutExt = FilenameUtils.removeExtension(list.get(i));
 	               CloudBlockBlob blob = container.getBlockBlobReference(fileNameWithOutExt+".pdf");
 	               blob.uploadFromFile(finalFile.getAbsolutePath());
+	               CloudBlockBlob xmlblob = xmlcontainer.getBlockBlobReference(fileNameWithOutExt+".xml");
+	               CloudBlockBlob bufferblob = buffercontainer.getBlockBlobReference(list.get(i));
 	               keyoutput.close();
 	               xsloutput.close();
 	               in.close();
@@ -122,6 +126,8 @@ public class signaturegeneration {
 	               outputFile.deleteOnExit();
 	               keyFile.deleteOnExit();
 	               blob2.deleteIfExists();
+	               xmlblob.deleteIfExists();
+	               bufferblob.deleteIfExists();
     			}
 		}
 	catch (IOException e) {
