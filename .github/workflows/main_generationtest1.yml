@@ -1,7 +1,7 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Java project to Azure Function App - generationtest1
+name: Build and deploy JAR app to Azure Web App - generationtest1
 
 on:
   push:
@@ -9,35 +9,45 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  AZURE_FUNCTIONAPP_NAME: generationtest1 # set this to your function app name on Azure
-  PACKAGE_DIRECTORY: '.' # set this to the directory which contains pom.xml file
-  JAVA_VERSION: '8' # set this to the java version to use
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: windows-latest
-    steps:
-      - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v2
 
-      - name: Setup Java Sdk ${{ env.JAVA_VERSION }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Java version
         uses: actions/setup-java@v1
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '8'
 
-      - name: 'Restore Project Dependencies Using Mvn'
-        shell: pwsh
-        run: |
-          pushd './${{ env.PACKAGE_DIRECTORY }}'
-          mvn clean package
-          popd
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
+      - name: Build with Maven
+        run: mvn clean install
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v2
+        with:
+          name: java-app
+          path: '${{ github.workspace }}/target/*.jar'
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: java-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'generationtest1'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7A0D7C8EC2B849E583D3F737CD8D1E4A }}
-          package: '${{ env.PACKAGE_DIRECTORY }}'
-          respect-pom-xml: true
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C525D59F36844B72A72AF5843CB4BC2C }}
+          package: '*.jar'
